@@ -2,6 +2,8 @@ import os
 import sys
 import socket
 import argparse
+import random
+import time
 from ipaddress import ip_address
 from ipaddress import ip_network
 from ipaddress import summarize_address_range
@@ -15,6 +17,7 @@ class SimpleScanner():
 	def scan(self, hostname, lowport, highport, ports):
 
 		serverIP  = socket.gethostbyname(hostname)
+
 
 		print("-" * 80)
 		print("Please wait, scanning host '%s', IP %s" % (hostname, serverIP))
@@ -69,6 +72,54 @@ class SimpleScanner():
 		print('    Open:               %d' % open)
 		print('    Closed or filtered: %d' % closed_or_filtered)
 
+	def lowandslow(self, hostname, lowport, highport):
+		serverIP  = socket.gethostbyname(hostname)
+		print("-" * 60)
+		print("Please wait, low and slow scanning host '%s', IP %s" % (hostname, serverIP))
+		print("-" * 60)
+
+		lowtime1 = datetime.now()
+
+		try:
+			total = 1000
+			current = 0
+			open = 0
+			closed_or_filtered = 0
+			randomlist = range(lowport,highport)
+			random.shuffle(randomlist)
+			for i in randomlist:
+				port = randomlist[i]
+				sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+				sock.settimeout(1)
+				result = sock.connect_ex((serverIP, port))
+				sock.close()
+				
+				if result == 0:
+					open += 1
+					print("Port %s - Open" % (port))
+					time.sleep(60)                                            
+				else:
+					closed_or_filtered += 1
+					print("Port %s - Closed" % (port))
+					time.sleep(60)  
+
+		except KeyboardInterrupt:
+			print("You pressed Ctrl+C")
+			sys.exit()
+		except socket.gaierror:
+			print('Hostname could not be resolved. Exiting')
+			sys.exit()
+		except socket.error:
+			print("Couldn't connect to server")
+			sys.exit()
+
+		lowtime2 = datetime.now()
+		total =  lowtime1 - lowtime2
+		print('Scanning Completed in:  %s' % total)
+		print('    Open:               %d' % open)
+		print('    Closed or filtered: %d' % closed_or_filtered)
+
+
 
 #
 # Parse some arguments
@@ -83,6 +134,7 @@ args = parser.parse_args()
 host = args.host
 lowport = int(args.lowport)
 highport = int(args.highport)
+scanner = SimpleScanner()
 
 ports = []
 ipRange = []
@@ -92,7 +144,15 @@ with open('ports.txt') as file_in:
 	for line in file_in:
 		ports.append(line.split(':')[0])
 
-scanner = SimpleScanner()
+print("Press 1 for a low and slow scan and 2 for a normal scan")
+x = input()
+if x == 1:
+	scanner.lowandslow(host, lowport, highport)
+if x == 2:
+	scanner.scan(host, lowport, highport)
+else: 
+	print("Error, choose 1 or 2")
+
 # if we want to scan a CIDR range
 if "/" in host:
 	print(host)

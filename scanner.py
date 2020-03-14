@@ -2,6 +2,9 @@ import os
 import sys
 import socket
 import argparse
+from ipaddress import ip_address
+from ipaddress import ip_network
+from ipaddress import summarize_address_range
 from datetime import datetime
 
 class SimpleScanner():
@@ -10,12 +13,12 @@ class SimpleScanner():
 		pass
 
 	def scan(self, hostname, lowport, highport, ports):
-		
+
 		serverIP  = socket.gethostbyname(hostname)
 
-		print("-" * 60)
+		print("-" * 80)
 		print("Please wait, scanning host '%s', IP %s" % (hostname, serverIP))
-		print("-" * 60)
+		print("-" * 80)
 
 		t1 = datetime.now()
 
@@ -82,11 +85,33 @@ lowport = int(args.lowport)
 highport = int(args.highport)
 
 ports = []
+ipRange = []
+# read well-known ports from a file 
+# KANNSKI BREYTA EKKI GLEYMA
 with open('ports.txt') as file_in:
 	for line in file_in:
 		ports.append(line.split(':')[0])
-		
 
 scanner = SimpleScanner()
-scanner.scan(host, lowport, highport, ports)
-
+# if we want to scan a CIDR range
+if "/" in host:
+	print(host)
+	network = ip_network(host)
+	for ip in network:
+		scanner.scan(str(ip), lowport, highport, ports)
+# if we want to scan a range of IP addresses 
+elif "-" in host:
+	ipRange.append(host.split("-"))
+	print(ipRange[0][0], ipRange[0][1])
+	for r in summarize_address_range(ip_address(ipRange[0][0]), ip_address(ipRange[0][1])):
+		nw = ip_network(r)
+		for ip in nw:
+			scanner.scan(str(ip), lowport, highport, ports)
+# If hostname is 0 then we read ip addresses from a file
+elif (host == "0"):
+	with open('ipaddresses.txt') as file_in:
+		for line in file_in:
+			scanner.scan(str(line.split("\n")[0]), lowport, highport, ports)
+			
+else:
+	scanner.scan(host, lowport, highport, ports)

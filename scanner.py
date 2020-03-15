@@ -4,7 +4,7 @@ import socket
 import argparse
 import random
 import time
-from scapy.all import *
+# from scapy.all import *
 from ipaddress import ip_address
 from ipaddress import ip_network
 from ipaddress import summarize_address_range
@@ -31,31 +31,31 @@ class SimpleScanner():
 			open = 0
 			closed_or_filtered = 0
 			
-			if lowport == 0 and highport == 0:
-				print("total searches: %s" % len(ports))
-				for port in ports:
-					port = int(port)
-					sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-					sock.settimeout(1)
-					result = sock.connect_ex((serverIP, port))
-					sock.close()
-					if result == 0:
-						open += 1
-						print("Port %s - Open" % (port))
-					else:
-						closed_or_filtered += 1
-			else:
-				print("total searches: %s" % (highport-lowport+1))
-				for port in range(lowport, highport+1):
-					sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-					sock.settimeout(1)
-					result = sock.connect_ex((serverIP, port))
-					sock.close()
-					if result == 0:
-						open += 1
-						print("Port %s - Open" % (port))
-					else:
-						closed_or_filtered += 1
+			# if lowport == 0 and highport == 0:
+			print("total searches: %s" % len(ports))
+			for port in ports:
+				port = int(port)
+				sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+				sock.settimeout(1)
+				result = sock.connect_ex((serverIP, port))
+				sock.close()
+				if result == 0:
+					open += 1
+					print("Port %s - Open" % (port))
+				else:
+					closed_or_filtered += 1
+			# else:
+			# 	print("total searches: %s" % (highport-lowport+1))
+			# 	for port in range(lowport, highport+1):
+			# 		sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+			# 		sock.settimeout(1)
+			# 		result = sock.connect_ex((serverIP, port))
+			# 		sock.close()
+			# 		if result == 0:
+			# 			open += 1
+			# 			print("Port %s - Open" % (port))
+			# 		else:
+			# 			closed_or_filtered += 1
 
 		except KeyboardInterrupt:
 			print("You pressed Ctrl+C")
@@ -74,7 +74,7 @@ class SimpleScanner():
 		print('    Closed or filtered: %d' % closed_or_filtered)
 
 
-	def lowandslow(self, hostname,lowport, highport):
+	def lowandslow(self, hostname, lowport, highport, ports):
 		serverIP  = socket.gethostbyname(hostname)
 		print("-" * 60)
 		print("Please wait, low and slow scanning host '%s', IP %s" % (hostname, serverIP))
@@ -87,10 +87,10 @@ class SimpleScanner():
 			current = 0
 			open = 0
 			closed_or_filtered = 0
-			randomlist = range(lowport,highport+1)
-			random.shuffle(randomlist)
-			for i in randomlist:
-				port = randomlist[i]
+			# randomlist = range(lowport,highport+1)
+			random.shuffle(ports)
+			for port in ports:
+				# port = ports[i]
 				sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 				sock.settimeout(1)
 				result = sock.connect_ex((serverIP, port))
@@ -167,20 +167,27 @@ scanner = SimpleScanner()
 
 ports = []
 ipRange = []
-# read well-known ports from a file 
-# KANNSKI BREYTA EKKI GLEYMA
-with open('ports.txt') as file_in:
-	for line in file_in:
-		ports.append(line.split(':')[0])
+
+# Testing ports in range or well known ports
+if lowport == 0 and highport == 0:
+	print("Testing well known ports...")
+	with open('ports.txt') as file_in:
+		for line in file_in:
+			ports.append(int(line.split(':')[0]))
+else:
+	for port in range(lowport, highport+1):
+		ports.append(port)
+
 
 print("Press 1 for a low and slow scan and 2 for a normal scan")
 x = input()
 if x == "1":
-	scanner.lowandslow(host, lowport, highport)
+	scanner.lowandslow(host, lowport, highport, ports)
 elif x == "2":
-	scanner.scan(host, lowport, highport)
+	scanner.scan(host, lowport, highport, ports)
 else: 
 	print("Error, choose 1 or 2")
+	sys.exit(0)
 
 # if we want to scan a CIDR range
 if "/" in host:

@@ -30,9 +30,15 @@ class SimpleScanner():
 			current = 0
 			open = 0
 			closed_or_filtered = 0
-			if lowAndSlow:
+			if lowAndSlow or ranPorts:
 				random.shuffle(ports)
 			for port in ports:
+				# Find the name of the service
+				service = ""
+				for x in topPorts:
+					if x.startswith(str(port) + ':'):
+						service = x[(len(str(port))+1):]
+							
 				port = int(port)
 				sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 				sock.settimeout(1)
@@ -40,10 +46,10 @@ class SimpleScanner():
 				sock.close()
 				if result == 0:
 					open += 1
-					print("Port %s - Open" % (port))
+					print("Port", port, "- Open -", service.rstrip())
 				else:
 					if showClosed:
-						print("Port %s - Closed" % (port))
+						print("Port", port, "- Closed -", service.rstrip())
 					closed_or_filtered += 1
 
 				if lowAndSlow:
@@ -71,7 +77,7 @@ class SimpleScanner():
 		ping = IP(dst = serverIP)/ICMP()
 		response = sr1(ping, timeout=6, verbose=0)
 		if response == None: 
-			print ("This host is down!")
+			print ("This host is down!") 
 		else:
 			print("This host is up!")
 
@@ -111,20 +117,23 @@ scanner = SimpleScanner()
 lowAndSlow = False
 ranPorts = False
 showClosed = False
-topPorts = False
+topPorts = []
 
 ports = []
 ipRange = []
 
 # Testing ports in range or well known ports
 if lowport == 0 and highport == 0:
-	topPorts = True
 	with open('ports.txt') as file_in:
 		for line in file_in:
+			topPorts.append(line)
 			ports.append(int(line.split(':')[0]))
 else:
 	for port in range(lowport, highport+1):
 		ports.append(port)
+		with open('ports.txt') as file_in:
+			for line in file_in:
+				topPorts.append(line)
 
 
 # Low and slow or normal scan?

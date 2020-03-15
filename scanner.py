@@ -123,34 +123,34 @@ class SimpleScanner():
 
 
 
-#	def checkhost(self, hostname, lowport, highport):
+	def checkhost(self, hostname, lowport, highport):
 		#totalPorts = highport - lowport
 		#for port in range(lowport, highport+1):
-#		serverIP  = socket.gethostbyname(hostname)
-#		print(serverIP)
-#		ping = IP(dst = serverIP)/ICMP()
-#		response = sr1(ping, timeout=6, verbose=0)
-#		print(response)
-#		if response == None: 
-#			print ("This host is down!")
-#		else:
-#			print("This host is up!")
+		serverIP  = socket.gethostbyname(hostname)
+		print(serverIP)
+		ping = IP(dst = serverIP)/ICMP()
+		response = sr1(ping, timeout=6, verbose=0)
+		print(response)
+		if response == None: 
+			print ("This host is down!")
+		else:
+			print("This host is up!")
 
-#	def checkport(self, hostname, lowport, highport):
-#		serverIP  = socket.gethostbyname(hostname)
-#		totalPorts = highport - lowport
-#		for port in range(lowport, highport+1):
-#			tcpRequest = IP(dst = serverIP)/TCP(dport=port, flags="S")
-#			tcpResponse = sr1(tcpRequest, timeout = 6, verbose = 0)
-#			print(tcpRequest)
-#			print(tcpResponse.getLayer(TCP))
+	def checkport(self, hostname, lowport, highport):
+		serverIP  = socket.gethostbyname(hostname)
+		totalPorts = highport - lowport
+		for port in range(lowport, highport+1):
+			tcpRequest = IP(dst = serverIP)/TCP(dport=port, flags="S")
+			tcpResponse = sr1(tcpRequest, timeout = 6, verbose = 0)
+			print(tcpRequest)
+			print(tcpResponse.getLayer(TCP))
 
-#			try: 
-#				if tcpResponse.getLayer(TCP).flags == "A":
-#					print(port, "is listening")
-#			except AttributeError:
-#				print(port, "is not listening")		
-#
+			try: 
+				if tcpResponse.getLayer(TCP).flags == "A":
+					print(port, "is listening")
+			except AttributeError:
+				print(port, "is not listening")		
+
 # Parse some arguments
 #
 parser = argparse.ArgumentParser('Scanner')

@@ -4,7 +4,7 @@ import socket
 import argparse
 import random
 import time
-# from scapy.all import *
+from scapy.all import *
 from ipaddress import ip_address
 from ipaddress import ip_network
 from ipaddress import summarize_address_range
@@ -15,7 +15,7 @@ class SimpleScanner():
 	def __init__(self):
 		pass
 
-	def scan(self, hostname, lowport, highport, ports):
+	def scan(self, hostname, lowport, highport, ports, lowAndSlow):
 
 		serverIP  = socket.gethostbyname(hostname)
 
@@ -30,10 +30,10 @@ class SimpleScanner():
 			current = 0
 			open = 0
 			closed_or_filtered = 0
-			
-			# if lowport == 0 and highport == 0:
-			print("total searches: %s" % len(ports))
+			if lowAndSlow:
+				random.shuffle(ports)
 			for port in ports:
+				print("(scanning port", port ,")")
 				port = int(port)
 				sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 				sock.settimeout(1)
@@ -44,18 +44,9 @@ class SimpleScanner():
 					print("Port %s - Open" % (port))
 				else:
 					closed_or_filtered += 1
-			# else:
-			# 	print("total searches: %s" % (highport-lowport+1))
-			# 	for port in range(lowport, highport+1):
-			# 		sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-			# 		sock.settimeout(1)
-			# 		result = sock.connect_ex((serverIP, port))
-			# 		sock.close()
-			# 		if result == 0:
-			# 			open += 1
-			# 			print("Port %s - Open" % (port))
-			# 		else:
-			# 			closed_or_filtered += 1
+
+				if lowAndSlow:
+					time.sleep(60)
 
 		except KeyboardInterrupt:
 			print("You pressed Ctrl+C")
@@ -69,87 +60,38 @@ class SimpleScanner():
 
 		t2 = datetime.now()
 		total =  t2 - t1
-		print('Scanning Completed in:  %s' % total)
-		print('    Open:               %d' % open)
-		print('    Closed or filtered: %d' % closed_or_filtered)
+		print('%d ports scanned in %s' % (len(ports), total))
+		print('    Open:                 %d' % open)
+		print('    Closed or filtered:   %d' % closed_or_filtered)
 
 
-	def lowandslow(self, hostname, lowport, highport, ports):
+	def checkhost(self, hostname):
 		serverIP  = socket.gethostbyname(hostname)
-		print("-" * 60)
-		print("Please wait, low and slow scanning host '%s', IP %s" % (hostname, serverIP))
-		print("-" * 60)
-
-		lowtime1 = datetime.now()
-
-		try:
-			total = 1000
-			current = 0
-			open = 0
-			closed_or_filtered = 0
-			# randomlist = range(lowport,highport+1)
-			random.shuffle(ports)
-			for port in ports:
-				# port = ports[i]
-				sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-				sock.settimeout(1)
-				result = sock.connect_ex((serverIP, port))
-				sock.close()
-				
-				if result == 0:
-					open += 1
-					print("Port %s - Open" % (port))
-					time.sleep(60)                                            
-				else:
-					closed_or_filtered += 1
-					print("Port %s - Closed" % (port))
-					time.sleep(60)                                            
-
-		except KeyboardInterrupt:
-			print("You pressed Ctrl+C")
-			sys.exit()
-		except socket.gaierror:
-			print('Hostname could not be resolved. Exiting')
-			sys.exit()
-		except socket.error:
-			print("Couldn't connect to server")
-			sys.exit()
-
-		lowtime2 = datetime.now()
-		total =  lowtime1 - lowtime2
-		print('Scanning Completed in:  %s' % total)
-		print('    Open:               %d' % open)
-		print('    Closed or filtered: %d' % closed_or_filtered)
-
-
-
-	def checkhost(self, hostname, lowport, highport):
-		#totalPorts = highport - lowport
-		#for port in range(lowport, highport+1):
-		serverIP  = socket.gethostbyname(hostname)
-		print(serverIP)
 		ping = IP(dst = serverIP)/ICMP()
 		response = sr1(ping, timeout=6, verbose=0)
-		print(response)
 		if response == None: 
 			print ("This host is down!")
 		else:
 			print("This host is up!")
 
-	def checkport(self, hostname, lowport, highport):
+	def checkport(self, hostname, ports, lowAndSlow):
 		serverIP  = socket.gethostbyname(hostname)
 		totalPorts = highport - lowport
-		for port in range(lowport, highport+1):
-			tcpRequest = IP(dst = serverIP)/TCP(dport=port, flags="S")
-			tcpResponse = sr1(tcpRequest, timeout = 6, verbose = 0)
-			print(tcpRequest)
-			print(tcpResponse.getLayer(TCP))
+		for port in ports:
+			tcpRequest = IP(dst=serverIP)/TCP(dport=port,flags="S")
+			tcpResponse = sr1(tcpRequest, timeout=6, verbose=0)
 
 			try: 
-				if tcpResponse.getLayer(TCP).flags == "A":
+				if "SA" in str(tcpResponse.summary()):
 					print(port, "is listening")
+				else:
+					print(port, "is not listening")		
 			except AttributeError:
 				print(port, "is not listening")		
+			
+			if lowAndSlow:
+				time.sleep(60)
+
 
 # Parse some arguments
 #
@@ -164,6 +106,7 @@ host = args.host
 lowport = int(args.lowport)
 highport = int(args.highport)
 scanner = SimpleScanner()
+lowAndSlow = False
 
 ports = []
 ipRange = []
@@ -179,13 +122,32 @@ else:
 		ports.append(port)
 
 
+# Low and slow or normal scan?
 print("Press 1 for a low and slow scan and 2 for a normal scan")
-x = input()
-if x == "1":
-	scanner.lowandslow(host, lowport, highport, ports)
-elif x == "2":
-	scanner.scan(host, lowport, highport, ports)
-else: 
+q1 = input()
+if q1 == "1":
+	lowAndSlow = True
+elif q1 == "2":
+	print("Press 1 to scan ports in ascending order and 2 for a randomized order")
+	q2 = input()
+	if q2 == "2":
+		random.shuffle(ports)
+	elif q2 != "1":
+		print("Error, choose 1 or 2")
+		sys.exit(0)
+else:	 
+	print("Error, choose 1 or 2")
+	sys.exit(0)
+
+
+# Normal scan or SYN scan?
+print("Press 1 for SYN scan and 2 for a normal scan")
+q0 = input()
+if q0 == "1":
+	SYN = True
+elif q0 == "2":
+	SYN = False
+else:
 	print("Error, choose 1 or 2")
 	sys.exit(0)
 
@@ -194,22 +156,38 @@ if "/" in host:
 	print(host)
 	network = ip_network(host)
 	for ip in network:
-		scanner.scan(str(ip), lowport, highport, ports)
+		if SYN:
+			scanner.checkhost(str(ip))
+			scanner.checkport(str(ip), ports, lowAndSlow)
+		else:
+			scanner.scan(str(ip), lowport, highport, ports, lowAndSlow)
 
 # if we want to scan a range of IP addresses 
 elif "-" in host:
 	ipRange.append(host.split("-"))
 	print(ipRange[0][0], ipRange[0][1])
 	for r in summarize_address_range(ip_address(ipRange[0][0]), ip_address(ipRange[0][1])):
-		nw = ip_network(r)
-		for ip in nw:
-			scanner.scan(str(ip), lowport, highport, ports)
+		network = ip_network(r)
+		for ip in network:
+			if SYN:
+				scanner.checkhost(str(ip))
+				scanner.checkport(str(ip), ports, lowAndSlow)
+			else:
+				scanner.scan(str(ip), lowport, highport, ports, lowAndSlow)
 
 # If hostname is 0 then we read ip addresses from a file
 elif (host == "0"):
 	with open('ipaddresses.txt') as file_in:
 		for line in file_in:
-			scanner.scan(str(line.split("\n")[0]), lowport, highport, ports)
+			if SYN:
+				scanner.checkhost(str(ip))
+				scanner.checkport(str(ip), ports, lowAndSlow)
+			else:
+				scanner.scan(str(line.split("\n")[0]), lowport, highport, ports, lowAndSlow)
 			
 else:
-	scanner.scan(host, lowport, highport, ports)
+	if SYN:
+		scanner.checkhost(host)
+		scanner.checkport(host, ports, lowAndSlow)
+	else:
+		scanner.scan(host, lowport, highport, ports, lowAndSlow)

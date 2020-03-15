@@ -5,10 +5,25 @@ Almar Teitsson (alt15)
 Björgvin Hall (bjh45)
 Emma Líf Jónsdóttir (elj44)
 
+Tilgangur með forriti: 
+   Tilgangurinn með forritinu er að skanna net og sjá hvaða port eru opin 
+   
+   Syn scanning:
+   Tilgangurinn með syn scanning er að skoða hvernig samskipti port eru að hafa án þess að 
+   opna tengingu við serverinn. Það er gert þannig að það sendir SYN pakka á öll portin hjá 
+   ákveðnum server ef serverinn sendir tilbaka SYN-ACK pakka þá vitum við að það ákveðna 
+   port er opið og ef portið er opið sendum við RST pakka svo serverinn heldur að eitthvað
+   hafi komið uppá og við höfum hætt við að tengjast. En ef serverinn svarar SYN pakkanum með 
+   RST þá vitum við að það port er lokað.
+   
+   Low and slow:
+   Tilgangurinn með low and slow scan-i er að komast að því hvaða port eru opin án þess 
+   að serverinn taki eftir því að verið sé að skoða það. 
+
 Leiðbeiningar um keyrslu:
    Nota skal python3 til að keyra forritið og hafa scapy pakkann á vélinni 
    
-    Það fyrsta getur verið annað hvort einhver host(ip eða URL) eða 
+   Til að byrja með tekur forritið inn þrjú input. Það fyrsta getur verið annað hvort einhver host(ip eða URL) eða 
    listi af ip tölum. annað og þriðja inntakið eru svo port. Það er annað hvort hægt að velja ákveðið bil af portum eða
    hafa bæði portin sem 0 og þá er notast við 50 helstu portin. 
    
@@ -25,5 +40,6 @@ Skrár:
    test.sh           - bash scripta til að prófa skanner
    ports.txt         - listi af 50 helstu portum 
    ipaddresses.txt   - listi af ip tölum 
+   requrements.txt   - listi af pökkum sem þarf að hafa til að keyra forritið
    
    

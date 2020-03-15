@@ -6,7 +6,9 @@ Björgvin Hall (bjh45)
 Emma Líf Jónsdóttir (elj44)
 
 Tilgangur með forriti: 
-   Tilgangurinn með forritinu er að skanna net og sjá hvaða port eru opin 
+   Tilgangurinn með forritinu er að skanna net og sjá hvaða port eru opin. Þeir sem myndu nota það væru 
+   einhver sem væri að sjá um öryggi eða einhver sem ætlar að gera árás á serverinn.
+   Það eru margar stillingar sem hægt er að nota hér fyrir neðan er farið yfir allar stillingarnar.
    
    Syn scanning:
    Tilgangurinn með syn scanning er að skoða hvernig samskipti port eru að hafa án þess að 
@@ -19,6 +21,8 @@ Tilgangur með forriti:
    Low and slow:
    Tilgangurinn með low and slow scan-i er að komast að því hvaða port eru opin án þess 
    að serverinn taki eftir því að verið sé að skoða það. 
+   
+   
 
 Leiðbeiningar um keyrslu:
    Nota skal python3 til að keyra forritið og hafa scapy pakkann á vélinni 
@@ -30,7 +34,10 @@ Leiðbeiningar um keyrslu:
    Forritið er hægt að keyra með mörgum stillingum. Þegar forritið er keyrt kemur upp spurning um hvort eigi að notast við 
    low and slow scan eða ekki. Þá er valið 1 fyrir low and slow scan og 2 ef það á að nota normal scan. Ef valið er 2 er 
    svo spurt hvort portin eigi að vera í hækkandi röð eða í random röð. Eftir að búið er að setja inn svar við þessum 
-   spurningum er svo spurt hvort eigi að nota SYN scan eða nota normal scan. Þá eru allar stillingar komnar og scan-ið fer 
+   spurningum er svo spurt hvort eigi að nota SYN scan eða nota normal scan. Síðasta spurningin eru svo hvort eigi að 
+   birta closed port eða ekki til að birta þau er valið 1. 
+   
+   Þá eru allar stillingar komnar og scan-ið fer 
    í gang og prentast út 
  
 

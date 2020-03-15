@@ -122,7 +122,6 @@ class SimpleScanner():
 		print('    Closed or filtered: %d' % closed_or_filtered)
 
 
-
 	def checkhost(self, hostname, lowport, highport):
 		#totalPorts = highport - lowport
 		#for port in range(lowport, highport+1):
@@ -164,6 +163,7 @@ host = args.host
 lowport = int(args.lowport)
 highport = int(args.highport)
 scanner = SimpleScanner()
+
 
 ports = []
 ipRange = []

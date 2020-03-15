@@ -1,5 +1,5 @@
 # SCANNER
-=======
+
 Hópur 17: Spritt og sápa
 - Almar Teitsson (alt15)
 - Björgvin Hall (bjh45)

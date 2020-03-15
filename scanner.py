@@ -160,12 +160,14 @@ lowAndSlow = False
 ranPorts = False
 showClosed = False
 topPorts = []
+useTopPorts = False
 
 ports = []
 ipRange = []
 
 #Testing ports in range or well known ports 
 if lowport == 0 and highport == 0:
+	useTopPorts = True
 	with open('ports.txt') as file_in:
 		for line in file_in:
 			topPorts.append(line)
@@ -234,7 +236,7 @@ if ranPorts:
 	print("Ports will be tested in randomized order")
 else:
 	print("Ports will be tested in ascending order")
-if topPorts:
+if useTopPorts:
 	print("50 well known ports will be tested")
 else:
 	print("Ports in the range", lowport, "-", highport, "will be tested")

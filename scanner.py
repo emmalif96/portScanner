@@ -15,14 +15,14 @@ class SimpleScanner():
 	def __init__(self):
 		pass
 
-	def scan(self, hostname, lowport, highport, ports, lowAndSlow):
+	def scan(self, hostname, lowport, highport, ports, lowAndSlow, showClosed):
 
 		serverIP  = socket.gethostbyname(hostname)
 
 
-		print("-" * 80)
+		print("-" * 60)
 		print("Please wait, scanning host '%s', IP %s" % (hostname, serverIP))
-		print("-" * 80)
+		print("-" * 60)
 
 		t1 = datetime.now()
 
@@ -33,7 +33,6 @@ class SimpleScanner():
 			if lowAndSlow:
 				random.shuffle(ports)
 			for port in ports:
-				print("(scanning port", port ,")")
 				port = int(port)
 				sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 				sock.settimeout(1)
@@ -43,6 +42,8 @@ class SimpleScanner():
 					open += 1
 					print("Port %s - Open" % (port))
 				else:
+					if showClosed:
+						print("Port %s - Closed" % (port))
 					closed_or_filtered += 1
 
 				if lowAndSlow:
@@ -74,7 +75,7 @@ class SimpleScanner():
 		else:
 			print("This host is up!")
 
-	def checkport(self, hostname, ports, lowAndSlow):
+	def checkport(self, hostname, ports, lowAndSlow, showClosed):
 		serverIP  = socket.gethostbyname(hostname)
 		totalPorts = highport - lowport
 		for port in ports:
@@ -83,9 +84,10 @@ class SimpleScanner():
 
 			try: 
 				if "SA" in str(tcpResponse.summary()):
-					print(port, "is listening")
+					print("Port %s - Open" % (port))
 				else:
-					print(port, "is not listening")		
+					if showClosed:
+						print("Port %s - Closed" % (port))	
 			except AttributeError:
 				print(port, "is not listening")		
 			
@@ -107,13 +109,16 @@ lowport = int(args.lowport)
 highport = int(args.highport)
 scanner = SimpleScanner()
 lowAndSlow = False
+ranPorts = False
+showClosed = False
+topPorts = False
 
 ports = []
 ipRange = []
 
 # Testing ports in range or well known ports
 if lowport == 0 and highport == 0:
-	print("Testing well known ports...")
+	topPorts = True
 	with open('ports.txt') as file_in:
 		for line in file_in:
 			ports.append(int(line.split(':')[0]))
@@ -127,11 +132,12 @@ print("Press 1 for a low and slow scan and 2 for a normal scan")
 q1 = input()
 if q1 == "1":
 	lowAndSlow = True
+	ranPorts = True
 elif q1 == "2":
 	print("Press 1 to scan ports in ascending order and 2 for a randomized order")
 	q2 = input()
 	if q2 == "2":
-		random.shuffle(ports)
+		ranPorts = True
 	elif q2 != "1":
 		print("Error, choose 1 or 2")
 		sys.exit(0)
@@ -151,6 +157,44 @@ else:
 	print("Error, choose 1 or 2")
 	sys.exit(0)
 
+# Show closed ports or hide
+print("Press 1 to display closed/filtered ports and 2 to hide them")
+q0 = input()
+if q0 == "1":
+	showClosed = True
+elif q0 == "2":
+	showClosed = False
+else:
+	print("Error, choose 1 or 2")
+	sys.exit(0)
+
+print('')
+print('-' * 80)
+
+if lowAndSlow:
+	print("Low and slow mode activated")
+else:
+	print("Low and slow mode not activated")
+if SYN:
+	print("SYN scan activated")
+else:
+	print("SYN scan not activated")
+if ranPorts:
+	print("Ports will be tested in randomized order")
+else:
+	print("Ports will be tested in ascending order")
+if topPorts:
+	print("50 well known ports will be tested")
+else:
+	print("Ports in the range", lowport, "-", highport, "will be tested")
+print("Host/s to scan:", host)
+
+print('-' * 80)
+input("Correct? Press enter to start the scan")
+print('-' * 80)
+
+
+
 # if we want to scan a CIDR range
 if "/" in host:
 	print(host)
@@ -158,22 +202,21 @@ if "/" in host:
 	for ip in network:
 		if SYN:
 			scanner.checkhost(str(ip))
-			scanner.checkport(str(ip), ports, lowAndSlow)
+			scanner.checkport(str(ip), ports, lowAndSlow, showClosed)
 		else:
-			scanner.scan(str(ip), lowport, highport, ports, lowAndSlow)
+			scanner.scan(str(ip), lowport, highport, ports, lowAndSlow, showClosed)
 
 # if we want to scan a range of IP addresses 
 elif "-" in host:
 	ipRange.append(host.split("-"))
-	print(ipRange[0][0], ipRange[0][1])
 	for r in summarize_address_range(ip_address(ipRange[0][0]), ip_address(ipRange[0][1])):
 		network = ip_network(r)
 		for ip in network:
 			if SYN:
 				scanner.checkhost(str(ip))
-				scanner.checkport(str(ip), ports, lowAndSlow)
+				scanner.checkport(str(ip), ports, lowAndSlow, showClosed)
 			else:
-				scanner.scan(str(ip), lowport, highport, ports, lowAndSlow)
+				scanner.scan(str(ip), lowport, highport, ports, lowAndSlow, showClosed)
 
 # If hostname is 0 then we read ip addresses from a file
 elif (host == "0"):
@@ -181,13 +224,13 @@ elif (host == "0"):
 		for line in file_in:
 			if SYN:
 				scanner.checkhost(str(ip))
-				scanner.checkport(str(ip), ports, lowAndSlow)
+				scanner.checkport(str(ip), ports, lowAndSlow, showClosed)
 			else:
-				scanner.scan(str(line.split("\n")[0]), lowport, highport, ports, lowAndSlow)
+				scanner.scan(str(line.split("\n")[0]), lowport, highport, ports, lowAndSlow, showClosed)
 			
 else:
 	if SYN:
 		scanner.checkhost(host)
-		scanner.checkport(host, ports, lowAndSlow)
+		scanner.checkport(host, ports, lowAndSlow, showClosed)
 	else:
-		scanner.scan(host, lowport, highport, ports, lowAndSlow)
+		scanner.scan(host, lowport, highport, ports, lowAndSlow, showClosed)

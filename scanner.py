@@ -17,7 +17,7 @@ class SimpleScanner():
 
 	def scan(self, hostname, lowport, highport, ports, lowAndSlow, showClosed):
 		
-		#@param hostname: is either a url,a ip address or a list of ip addresses.
+		#@param hostname: is either a url or an ip address.
 		#@param lowport: is a port number and the ports between lowport and highport are the ports that are being checked 
 		#if both are 0 then the most common ports are used.
 		#@param highport: is a port number and the ports between lowport and highport are the ports that are being checked 
@@ -92,7 +92,7 @@ class SimpleScanner():
 
 	def checkhost(self, hostname):
 		 
-		#@param hostname: is either a url,a ip address or a list of ip addresses.
+		#@param hostname: is either a url or an ip address
 
 		#@type hostname: String
 
@@ -108,7 +108,7 @@ class SimpleScanner():
 
 	def checkport(self, hostname, ports, lowAndSlow, showClosed):
 		
-		#@param hostname: Is either a url,a ip address or a list of ip addresses.
+		#@param hostname: is either a url or an ip address
 		#@param ports: Is a list of ports.
 		#@param lowAndSlow: Is a boolean that decides if lowAndSlow is used or not.
 		#@param showClosed: Is a boolean that decides if we show closed ports or not.
@@ -125,15 +125,19 @@ class SimpleScanner():
 		for port in ports:
 			tcpRequest = IP(dst=serverIP)/TCP(dport=port,flags="S")
 			tcpResponse = sr1(tcpRequest, timeout=6, verbose=0)
-
+			# Find the name of the service
+			service = ""
+			for x in topPorts:
+				if x.startswith(str(port) + ':'):
+					service = x[(len(str(port))+1):]
 			try: 
 				if "SA" in str(tcpResponse.summary()): #tcpResponse.getLayer(TCP).flags didn't work
-					print("Port %s - Open" % (port))
+					print("Port", port, "- Open -", service.rstrip())
 				else:
 					if showClosed:
-						print("Port %s - Closed" % (port))	
+						print("Port", port, "- Closed -", service.rstrip())	
 			except AttributeError:
-				print(port, "is not listening")		
+				print("Port", port, "- Closed -", service.rstrip())		
 			
 			if lowAndSlow:
 				time.sleep(60)

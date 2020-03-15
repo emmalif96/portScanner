@@ -26,11 +26,18 @@ Tilgangur með forriti:
 
 Leiðbeiningar um keyrslu:
    Nota skal python3 til að keyra forritið og hafa scapy pakkann á vélinni 
+   input-in sem eru tekin inn eru þrjú en það er hostname,lowport og highport. Það
+   eru mismunandi stillingar sem hægt er að nota en hér fyrir neðan er farið yfir þær.
    
-   Til að byrja með tekur forritið inn þrjú input. Það fyrsta getur verið annað hvort einhver host(ip eða URL) eða 
-   listi af ip tölum. annað og þriðja inntakið eru svo port. Það er annað hvort hægt að velja ákveðið bil af portum eða
-   hafa bæði portin sem 0 og þá er notast við 50 helstu portin. 
+   hostname: 
+      Ef hostname inniheldur "/" þá prentast út CIDR range af ip tölum
+      Ef hostname inniheldur "-" skannar ip tölur á ákveðnu bili. 
+      Ef hostname er "0" er lesið ip tölur úr ipaddresses.txt.
    
+   lowport and highport:
+      Ef lowport og highport eru ekki bæði 0 þá er tekið bilið þar á milli og tékkað á þeim portum.
+      Ef lowport og highport eru bæði 0 þá er notað algengustu portin en þau eru í skjalinu ports.txt
+      
    Forritið er hægt að keyra með mörgum stillingum. Þegar forritið er keyrt kemur upp spurning um hvort eigi að notast við 
    low and slow scan eða ekki. Þá er valið 1 fyrir low and slow scan og 2 ef það á að nota normal scan. Ef valið er 2 er 
    svo spurt hvort portin eigi að vera í hækkandi röð eða í random röð. Eftir að búið er að setja inn svar við þessum 

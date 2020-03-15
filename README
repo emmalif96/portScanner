@@ -1,7 +1,29 @@
 SCANNER
 =======
+Hópur 17: Spritt og sápa
+Almar Teitsson (alt15)
+Björgvin Hall (bjh45)
+Emma Líf Jónsdóttir (elj44)
+
+Leiðbeiningar um keyrslu:
+   Nota skal python3 til að keyra forritið og hafa scapy pakkann á vélinni 
+   
+    Það fyrsta getur verið annað hvort einhver host(ip eða URL) eða 
+   listi af ip tölum. annað og þriðja inntakið eru svo port. Það er annað hvort hægt að velja ákveðið bil af portum eða
+   hafa bæði portin sem 0 og þá er notast við 50 helstu portin. 
+   
+   Forritið er hægt að keyra með mörgum stillingum. Þegar forritið er keyrt kemur upp spurning um hvort eigi að notast við 
+   low and slow scan eða ekki. Þá er valið 1 fyrir low and slow scan og 2 ef það á að nota normal scan. Ef valið er 2 er 
+   svo spurt hvort portin eigi að vera í hækkandi röð eða í random röð. Eftir að búið er að setja inn svar við þessum 
+   spurningum er svo spurt hvort eigi að nota SYN scan eða nota normal scan. Þá eru allar stillingar komnar og scan-ið fer 
+   í gang og prentast út 
+ 
 
 Skrár:
 
-   scanner.py    - grind fyrir skanner
-   test.sh       - bash scripta til að prófa skanner
+   scanner.py        - grind fyrir skanner
+   test.sh           - bash scripta til að prófa skanner
+   ports.txt         - listi af 50 helstu portum 
+   ipaddresses.txt   - listi af ip tölum 
+   
+   
